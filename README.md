@@ -1,6 +1,6 @@
 # EduBoard AI
 
-Agent de digitalisation et d'explication de tableau blanc.
+Agent de digitalisation et d'explication de tableau blanc fait par TALIB ABDELJALIL.
 
 On prend en photo le tableau à la fin du cours, et l'agent :
 1. redresse et nettoie la photo (OpenCV),
@@ -81,7 +81,7 @@ L'agent a besoin d'un modèle qui sait **lire des images** et **appeler des outi
 | Fournisseur | Coût | Modèle par défaut | Clé |
 |---|---|---|---|
 | **Groq** (recommandé pour démarrer) | gratuit (avec limites par minute) | `qwen/qwen3.8-27b` (open source) | https://console.groq.com/keys |
-| **Anthropic** | payant | `claude-opus-5-5` | https://console.anthropic.com |
+
 
 Le fournisseur est choisi automatiquement : si `GROQ_API_KEY` est présente dans `.env`, c'est Groq ; sinon Anthropic. On peut forcer le choix avec `EDUBOARD_PROVIDER=groq` ou `EDUBOARD_PROVIDER=anthropic`.
 
