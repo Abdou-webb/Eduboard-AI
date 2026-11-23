@@ -74,6 +74,31 @@ pip install -r requirements.txt
 copy .env.example .env        # puis mettre sa clé API dans .env
 ```
 
+## Choisir le modèle
+
+L'agent a besoin d'un modèle qui sait **lire des images** et **appeler des outils**. Deux fournisseurs sont pris en charge :
+
+| Fournisseur | Coût | Modèle par défaut | Clé |
+|---|---|---|---|
+| **Groq** (recommandé pour démarrer) | gratuit (avec limites par minute) | `qwen/qwen3.8-27b` (open source) | https://console.groq.com/keys |
+| **Anthropic** | payant | `claude-opus-5-5` | https://console.anthropic.com |
+
+Le fournisseur est choisi automatiquement : si `GROQ_API_KEY` est présente dans `.env`, c'est Groq ; sinon Anthropic. On peut forcer le choix avec `EDUBOARD_PROVIDER=groq` ou `EDUBOARD_PROVIDER=anthropic`.
+
+Exemple de `.env` pour Groq :
+```
+GROQ_API_KEY=gsk_...
+```
+
+Groq utilise une API compatible OpenAI. L'adaptateur `eduboard/openai_compat.py` convertit les messages et les outils, donc la boucle de l'agent est la même pour les deux fournisseurs. Particularités côté Groq :
+- les images de zoom sont renvoyées dans un message séparé (un résultat d'outil ne peut contenir que du texte) ;
+- seules la photo du tableau et les zooms les plus récents sont gardés (`EDUBOARD_MAX_IMAGES`), certains modèles limitant le nombre d'images par requête ;
+- si le modèle appelle un outil inexistant ou avec un JSON invalide, Groq refuse la requête : l'agent lui explique l'erreur et relance (2 fois max) ;
+- en cas de limite de débit (erreur 429), la requête est relancée automatiquement ;
+- le réglage « effort de raisonnement » n'a pas d'effet.
+
+Les modèles disponibles sur Groq changent régulièrement : pour en utiliser un autre, choisir un modèle qui gère la vision et les outils et le mettre dans `GROQ_MODEL`. Un modèle gratuit se trompe plus souvent qu'un modèle comme Claude en lisant le tableau ; les outils `zoom_region` et `check_math` compensent en partie.
+
 > Sous Windows avec Smart App Control, l'erreur `DLL load failed while importing jiter`
 > vient des versions récentes de `jiter` (dépendance du SDK). `requirements.txt` fixe
 > donc `jiter<0.18`.
@@ -111,11 +136,16 @@ Les tests de l'agent utilisent un faux client qui rejoue un scénario (zoom → 
 
 | Variable | Défaut | |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | – | clé API |
-| `EDUBOARD_MODEL` | `claude-opus-5-5` | modèle (doit supporter la vision) |
-| `EDUBOARD_EFFORT` | `medium` | `low` / `medium` / `high` : profondeur de raisonnement |
+| `EDUBOARD_PROVIDER` | auto | `groq` ou `anthropic` (auto : Groq si `GROQ_API_KEY` est présente) |
+| `GROQ_API_KEY` | – | clé API Groq |
+| `GROQ_MODEL` | `qwen/qwen3.8-27b` | modèle Groq (vision + outils) |
+| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | URL de l'API compatible OpenAI |
+| `EDUBOARD_MAX_IMAGES` | `5` | images max par requête (Groq) |
+| `ANTHROPIC_API_KEY` | – | clé API Anthropic |
+| `EDUBOARD_MODEL` | `claude-opus-5-5` | modèle Anthropic (doit supporter la vision) |
+| `EDUBOARD_EFFORT` | `medium` | `low` / `medium` / `high` : profondeur de raisonnement (Anthropic seulement) |
 | `EDUBOARD_MAX_STEPS` | `12` | tours max de la boucle |
-| `EDUBOARD_FALLBACK` | `1` | repli automatique sur un autre modèle si une requête est refusée |
+| `EDUBOARD_FALLBACK` | `1` | repli automatique sur un autre modèle si une requête est refusée (Anthropic seulement) |
 
 ## Limites connues
 
