@@ -1,0 +1,10 @@
+anthropic>=1.0
+openai>=1.40
+# jiter 0.18+ est bloque par le controle d'application de Windows (Smart App Control)
+jiter>=0.4,<0.18
+opencv-python-headless>=4.9
+numpy>=1.26
+sympy>=1.12
+streamlit>=1.38
+python-dotenv>=1.0
+pytest>=8.0
